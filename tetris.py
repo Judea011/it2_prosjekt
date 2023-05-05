@@ -120,10 +120,10 @@ T = [['.....',
 
 figurs = [S, Z, I, O, J, L, T]
 figur_farge = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
-# index 0 - 6 represent shape
+# indeks av hvor mange figur er det og med farger.
 
 
-class Piece(object):  # *
+class Piece(object):  # det definere figuren.
     def __init__(self, x, y, shape):
         self.x = x
         self.y = y
@@ -132,10 +132,10 @@ class Piece(object):  # *
         self.rotation = 0
 
 
-def create_grid(locked_pos={}):  # *
+def create_grid(locked_pos={}):  # her lager vi rutenettene for radene og kolonnene.
     grid = [[(0,0,0) for _ in range(10)] for _ in range(20)]
 
-    for i in range(len(grid)):
+    for i in range(len(grid)): # Og har for at figurene skal låse seg selv når de fikk kontakt med de andre figurene
         for j in range(len(grid[i])):
             if (j, i) in locked_pos:
                 c = locked_pos[(j,i)]
@@ -143,11 +143,11 @@ def create_grid(locked_pos={}):  # *
     return grid
 
 
-def convert_figur_format(shape):
+def convert_figur_format(shape): # Her vi konverterer den figur som vi har gjort til en liste slik at koden kan forstå det.
     positions = []
     format = shape.shape[shape.rotation % len(shape.shape)]
 
-    for i, line in enumerate(format):
+    for i, line in enumerate(format): # Det vil konvertere til en liste over posisjoner og vi sett inn return.
         row = list(line)
         for j, column in enumerate(row):
             if column == '0':
@@ -159,7 +159,7 @@ def convert_figur_format(shape):
     return positions
 
 
-def valid_space(shape, grid):
+def valid_space(shape, grid): #
     accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
     accepted_pos = [j for sub in accepted_pos for j in sub]
 
@@ -172,8 +172,8 @@ def valid_space(shape, grid):
     return True
 
 
-def check_lost(positions):
-    for pos in positions:
+def check_lost(positions): # Det sjekk vis stillinger av figur i  listen er over skjermen.
+    for pos in positions: #Hvis det er, har vi nådd toppen og tapte derfor kampen.
         x, y = pos
         if y < 1:
             return True
@@ -181,22 +181,21 @@ def check_lost(positions):
     return False
 
 
-def get_figur():
+def get_figur(): # Når figuren faller vi trenger at figuren  bli random 
     return Piece(5, 0, random.choice(figurs))
 
 
-def tegn_grid(surface, grid):
+def tegn_grid(surface, grid): # Det tegn grids rutenett
     sx = top_left_x
     sy = top_left_y
 
-    for i in range(len(grid)):
+    for i in range(len(grid)): 
         pg.draw.line(surface, (128,128,128), (sx, sy + i*block_size), (sx+play_width, sy+ i*block_size))
         for j in range(len(grid[i])):
             pg.draw.line(surface, (128, 128, 128), (sx + j*block_size, sy),(sx + j*block_size, sy + play_height))
 
 
-def clear_rows(grid, locked):
-
+def clear_rows(grid, locked): # Her vi sier her at vis x-row er full det skal ta borte den.
     inc = 0
     for i in range(len(grid)-1, -1, -1):
         row = grid[i]
@@ -209,7 +208,7 @@ def clear_rows(grid, locked):
                 except:
                     continue
 
-    if inc > 0:
+    if inc > 0: #Også at vis det x-row bli ta bort det som var opp skal gå ned.
         for key in sorted(list(locked), key=lambda x: x[1])[::-1]:
             x, y = key
             if y < ind:
@@ -219,7 +218,7 @@ def clear_rows(grid, locked):
     return inc
 
 
-def tegn_neste_figur(shape, surface):
+def tegn_neste_figur(shape, surface): # Her det skal se hvilken figur er neste å faller som lager på venstre.
     font = pg.font.SysFont('comicsans', 30)
     label = font.render('Next Shape', 1, (255,255,255))
 
@@ -236,10 +235,10 @@ def tegn_neste_figur(shape, surface):
     surface.blit(label, (sx + 10, sy - 30))
 
 
-def update_score(nscore):
+def update_score(nscore):  # Det skal oppdater inne poeng.txt det ny poeng som fikk og vis du trikk r det skal se hvilken ha det høyeste poeng.
     score = max_score()
 
-    with open('scores.txt', 'w') as f:
+    with open('poeng.txt', 'w') as f:
         if int(score) > nscore:
             f.write(str(score))
         else:
@@ -247,14 +246,14 @@ def update_score(nscore):
 
 
 def max_score():
-    with open('scores.txt', 'r') as f:
+    with open('poeng.txt', 'r') as f:
         lines = f.readlines()
         score = lines[0].strip()
 
     return score
 
 
-def draw_window(surface, grid, score=0, last_score = 0):
+def tegn_vindu(surface, grid, score=0, last_score = 0): # Her vi skal set inn best poeng og poeng som du har når du spiller.
     surface.fill((0, 0, 0))
 
     pg.font.init()
@@ -263,7 +262,7 @@ def draw_window(surface, grid, score=0, last_score = 0):
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
 
-    # current score
+    # poeng nå
     font = pg.font.SysFont('comicsans', 30)
     label = font.render('Score: ' + str(score), 1, (255,255,255))
 
@@ -272,7 +271,7 @@ def draw_window(surface, grid, score=0, last_score = 0):
 
     surface.blit(label, (sx + 20, sy + 160))
     
-    # last score
+    # siste poeng
     label = font.render('High Score: ' + last_score, 1, (255,255,255))
 
     sx = top_left_x - 250
@@ -290,7 +289,7 @@ def draw_window(surface, grid, score=0, last_score = 0):
     #pygame.display.update()
 
 
-def main(win):  # *
+def main(win):  # her vi skal sett inn alt som hvi har gjørt og se vis det funger.
     last_score = max_score()
     locked_positions = {}
     grid = create_grid(locked_positions)
@@ -311,12 +310,12 @@ def main(win):  # *
         level_time += clock.get_rawtime()
         clock.tick()
 
-        if level_time/1000 > 5:
+        if level_time/1000 > 5: # Hver gang level av tetris skal bli vankelig.
             level_time = 0
             if level_time > 0.12:
                 level_time -= 0.005
 
-        if fall_time/1000 > fall_speed:
+        if fall_time/1000 > fall_speed: # Hver gang level av tetris skal bli Raskere.
             fall_time = 0
             current_piece.y += 1
             if not(valid_space(current_piece, grid)) and current_piece.y > 0:
@@ -328,7 +327,7 @@ def main(win):  # *
                 run = False
                 pg.display.quit()
 
-            if event.type == pg.KEYDOWN:
+            if event.type == pg.KEYDOWN: # Typer av knapper som du kan bruker for å byte side og gå til hoyre eller venstre.
                 if event.key == pg.K_LEFT:
                     current_piece.x -= 1
                     if not(valid_space(current_piece, grid)):
@@ -352,8 +351,9 @@ def main(win):  # *
             x, y = shape_pos[i]
             if y > -1:
                 grid[y][x] = current_piece.color
+        #hvis figurer faller ned.
 
-        if change_piece:
+        if change_piece: 
             for pos in shape_pos:
                 p = (pos[0], pos[1])
                 locked_positions[p] = current_piece.color
@@ -362,10 +362,11 @@ def main(win):  # *
             change_piece = False
             score += clear_rows(grid, locked_positions) * 10
 
-        draw_window(win, grid, score, last_score)
+        tegn_vindu(win, grid, score, last_score)
         tegn_neste_figur(next_piece, win)
         pg.display.update()
 
+        # Det skal sjekke hvis det som spiller tapte.
         if check_lost(locked_positions):
 
             pg.display.update()
